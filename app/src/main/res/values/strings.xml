@@ -18,6 +18,7 @@
     <string name="forgot_password_label">Mot de passe oublié ?</string>
     <string name="register_label">Créer votre compte</string>
     <string name="signin_label">Se connecter</string>
+    <string name="signout_label">Se déconnecter</string>
     <string name="user_role_employee">Employé</string>
     <string name="user_role_client">Client</string>
     <string name="field_required_error">Ce champ est requis!</string>

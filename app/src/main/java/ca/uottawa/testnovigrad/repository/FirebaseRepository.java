@@ -1,9 +1,7 @@
 package ca.uottawa.testnovigrad.repository;
 
-import android.content.Context;
 import android.util.Log;
 
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -170,5 +168,9 @@ public class FirebaseRepository {
         });
 
         return future;
+    }
+
+    public void logout(){
+        firebaseAuth.signOut();
     }
 }

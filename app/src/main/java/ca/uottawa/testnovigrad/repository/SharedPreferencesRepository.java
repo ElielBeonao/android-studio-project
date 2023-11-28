@@ -1,12 +1,15 @@
 package ca.uottawa.testnovigrad.repository;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
 
 import java.util.Map;
 
+import ca.uottawa.testnovigrad.activities.LoginActivity;
 import ca.uottawa.testnovigrad.models.User;
 
 public class SharedPreferencesRepository {
@@ -51,5 +54,17 @@ public class SharedPreferencesRepository {
             return null;
 
         return new Gson().fromJson(userJson, User.class);
+    }
+
+    public void logoutUser(Activity activity) {
+
+        sharedPreferencesEditor.clear();
+        sharedPreferencesEditor.commit();
+
+        Intent i = new Intent(context, LoginActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(i);
+        activity.finish();
     }
 }

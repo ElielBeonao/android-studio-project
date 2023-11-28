@@ -7,10 +7,14 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.FirebaseApp;
+
+import java.util.Map;
 
 import ca.uottawa.testnovigrad.R;
 import ca.uottawa.testnovigrad.models.User;
@@ -27,7 +31,19 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
 
+    private Button logoutButton;
+
     private User currentUser;
+
+    private View.OnClickListener logoutCurrentUserListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            firebaseRepository.logout();
+            sharedPreferencesRepository.logoutUser(MainActivity.this);
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
         textView = findViewById(R.id.hello_word);
         textView.setText(String.format(getString(R.string.welcome_text), currentUser.getFirstName(), currentUser.getUserAuthority()));
+
+        logoutButton = findViewById(R.id.btn_logout);
+        logoutButton.setOnClickListener(logoutCurrentUserListener);
 
     }
 
