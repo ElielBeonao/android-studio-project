@@ -1,0 +1,21 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.TestNovigrad" parent="Base.Theme.TestNovigrad">
+        <!-- Transparent system bars for edge-to-edge. -->
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">?attr/isLightTheme</item>
+    </style>
+
+    <style name="PrimaryButton" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:padding">20dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:background">@drawable/rounded_shape</item>
+        <item name="backgroundTint">@color/primary</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+    </style>
+
+    <style name="PrimaryButton.Grey" parent="PrimaryButton">
+        <item name="backgroundTint">@color/primaryFade</item>
+    </style>
+</resources>
