@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 
 import java.util.Map;
 
@@ -14,6 +17,8 @@ import ca.uottawa.testnovigrad.models.User;
 
 public class SharedPreferencesRepository {
 
+    private static String TAG = SharedPreferencesRepository.class.getName();
+
     private SharedPreferences sharedPreferences;
 
     private SharedPreferences.Editor sharedPreferencesEditor;
@@ -21,8 +26,6 @@ public class SharedPreferencesRepository {
     private int PRIVATE_MODE = 0;
 
     private String PREF_NAME = "APP_NOVIGRAD";
-
-    private String CURRENT_USER_ID_KEY = "USER_ID";
 
     private String CURRENT_USER_KEY = "CURRENT_USER";
 
@@ -53,7 +56,15 @@ public class SharedPreferencesRepository {
         if( userJson == null)
             return null;
 
-        return new Gson().fromJson(userJson, User.class);
+        User user = null;
+        try{
+            user = new Gson().fromJson(userJson, User.class);
+        }catch (Exception exception){
+            Log.e(TAG, "Unable to parse given uid: "+exception.getMessage());
+            user = null;
+        }
+
+        return user;
     }
 
     public void logoutUser(Activity activity) {

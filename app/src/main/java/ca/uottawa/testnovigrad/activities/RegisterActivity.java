@@ -25,7 +25,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText emailAddressEditText, passwordEditText, confirmPasswordEditText, firstNameEditText, lastNameEditText;
     private RadioButton userRoleClientRadioButton, userRoleEmployeeRadioButton;
 
-    private Button submitButton;
+    private Button navigationButton, submitButton;
 
     private String userRole = FirebaseRepository.USER_ROLE_CLIENT;
 
@@ -34,6 +34,45 @@ public class RegisterActivity extends AppCompatActivity {
     private FirebaseRepository firebaseRepository;
 
     private SharedPreferencesRepository sharedPreferencesRepository;
+
+    private View.OnClickListener navigationListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+            finish();
+        }
+    };
+
+    private View.OnClickListener registerListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            if(isFormValid()){
+                firebaseRepository.createAccount(
+                        emailAddressEditText.getText().toString().trim(),
+                        passwordEditText.getText().toString().trim(),
+                        firstNameEditText.getText().toString().trim(),
+                        lastNameEditText.getText().toString().trim(),
+                        userRole
+                ).thenAccept(userId -> {
+
+                    startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                    finish();
+
+                }).exceptionally(throwable -> {
+                    Log.e(TAG,"Error creating user account: " + throwable.getMessage());
+                    Toast.makeText(RegisterActivity.this, "Une Erreur est survenue lors de la creation du compte. Veuillez contacter l'administrateur ", Toast.LENGTH_SHORT).show();
+                    return null;
+                });
+            }else{
+                Toast.makeText(RegisterActivity.this, "Veuillez remplir tous les champs de ce formulaire!", Toast.LENGTH_SHORT).show();
+
+            }
+
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +87,7 @@ public class RegisterActivity extends AppCompatActivity {
         firstNameEditText = findViewById(R.id.firstname_input);
         lastNameEditText = findViewById(R.id.lastname_input);
         submitButton = findViewById(R.id.btn_register);
+        navigationButton = findViewById(R.id.btn_login_navto_login);
 
         userRoleClientRadioButton = findViewById(R.id.user_role_client);
         userRoleEmployeeRadioButton = findViewById(R.id.radio_user_role_employee);
@@ -74,32 +114,8 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
-        submitButton.setOnClickListener(
-                new View.OnClickListener(){
-
-                    @Override
-                    public void onClick(View v) {
-                        if(isFormValid())
-                            firebaseRepository.createAccount(
-                                    emailAddressEditText.getText().toString().trim(),
-                                    passwordEditText.getText().toString().trim(),
-                                    firstNameEditText.getText().toString().trim(),
-                                    lastNameEditText.getText().toString().trim(),
-                                    userRole
-                                    ).thenAccept(userId -> {
-
-                                    startActivity(new Intent(getApplicationContext(), LoginActivity.class));
-                                    finish();
-
-                            }).exceptionally(throwable -> {
-                                            Log.e(TAG,"Error creating user account: " + throwable.getMessage());
-                                            Toast.makeText(RegisterActivity.this, "Une Erreur est survenue lors de la creation du compte. Veuillez contacter l'administrateur ", Toast.LENGTH_SHORT).show();
-                                            return null;
-                                        });
-
-                    }
-                }
-        );
+        submitButton.setOnClickListener(registerListener);
+        navigationButton.setOnClickListener(navigationListener);
     }
 
     private Boolean isFormValid(){

@@ -18,6 +18,8 @@
     <string name="forgot_password_label">Mot de passe oublié ?</string>
     <string name="register_label">Créer votre compte</string>
     <string name="signin_label">Se connecter</string>
+    <string name="signin_invite_to_register_label">Vous n\'avez pas encore de compte? Créez le!</string>
+    <string name="signup_invite_to_login_label">Vous avez un compte? Connectez-vous!</string>
     <string name="signout_label">Se déconnecter</string>
     <string name="user_role_employee">Employé</string>
     <string name="user_role_client">Client</string>

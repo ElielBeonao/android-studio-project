@@ -32,7 +32,16 @@ public class LoginActivity extends AppCompatActivity {
 
     private String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
 
-    private Button submitButton;
+    private Button navigationButton, submitButton;
+
+    private View.OnClickListener navigationListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(getApplicationContext(), RegisterActivity.class));
+            finish();
+        }
+    };
 
     private View.OnClickListener authenticateUserListener = new View.OnClickListener(){
 
@@ -93,8 +102,10 @@ public class LoginActivity extends AppCompatActivity {
         emailAddressEditText = findViewById(R.id.login_email_address_input);
         passwordEditText = findViewById(R.id.login_password_input);
         submitButton = findViewById(R.id.btn_login);
+        navigationButton = findViewById(R.id.btn_login_navto_register);
 
         submitButton.setOnClickListener(authenticateUserListener);
+        navigationButton.setOnClickListener(navigationListener);
     }
 
     private void redirectToTargetByGivenUserRole(Context context){
