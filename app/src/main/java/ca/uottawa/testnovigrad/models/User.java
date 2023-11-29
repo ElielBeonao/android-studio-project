@@ -10,6 +10,8 @@ public class User implements Serializable {
     private String lastName;
     private String userAuthority;
 
+    private String userCompany;
+
     public User(String email, String firstName, String lastName, String userAuthority){
         this.email = email;
         this.firstName = firstName;
@@ -65,6 +67,14 @@ public class User implements Serializable {
         this.userAuthority = userAuthority;
     }
 
+    public String getUserCompany() {
+        return userCompany;
+    }
+
+    public void setUserCompany(String userCompany) {
+        this.userCompany = userCompany;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -73,6 +83,7 @@ public class User implements Serializable {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", userAuthority='" + userAuthority + '\'' +
+                ", userCompany='" + userCompany + '\'' +
                 '}';
     }
 }

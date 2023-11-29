@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
 
-    private Button logoutButton;
+    private Button userManagementNavigationButton, logoutButton;
 
     private User currentUser;
 
@@ -41,6 +41,16 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             firebaseRepository.logout();
             sharedPreferencesRepository.logoutUser(MainActivity.this);
+
+        }
+    };
+
+    private View.OnClickListener manageUserNavigationListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(getApplicationContext(), UserManagementActivity.class));
+            finish();
 
         }
     };
@@ -56,7 +66,10 @@ public class MainActivity extends AppCompatActivity {
         textView.setText(String.format(getString(R.string.welcome_text), currentUser.getFirstName(), currentUser.getUserAuthority()));
 
         logoutButton = findViewById(R.id.btn_logout);
+        userManagementNavigationButton = findViewById(R.id.btn_user_management);
+
         logoutButton.setOnClickListener(logoutCurrentUserListener);
+        userManagementNavigationButton.setOnClickListener(manageUserNavigationListener);
 
     }
 

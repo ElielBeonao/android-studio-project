@@ -9,10 +9,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import ca.uottawa.testnovigrad.models.User;
 
 public class FirebaseRepository {
 
@@ -21,6 +26,8 @@ public class FirebaseRepository {
     private FirebaseFirestore firebaseFirestore;
 
     public static String USER_COLLECTION_NAME = "users";
+
+//    public static String USER_COLLECTION_UID_KEY = "uid";
 
     public static String USER_ROLE_CLIENT = "USER_CLIENT";
 
@@ -75,6 +82,36 @@ public class FirebaseRepository {
         return future;
     }
 
+    public CompletableFuture<String> editAccount(String uid, String emailAddress, String firstName, String lastName, String userAuthority) {
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        // Create a new user with email and password
+//        firebaseAuth. (new com.google.firebase.firestore.auth.User(uid))
+//                .addOnCompleteListener(task -> {
+//                    if (task.isSuccessful()) {
+//                        String uid = task.getResult().getUser().getUid();
+
+                        // Once the user is created, you can store additional information in Firestore
+                        Map<String, Object> userMap = new HashMap<>();
+                        userMap.put("email", emailAddress);
+                        userMap.put("firstName", firstName);
+                        userMap.put("lastName", lastName);
+//                        userMap.put("username", username);
+                        userMap.put("userAuthority", userAuthority);
+
+                        // Add the user information to Firestore
+                        firebaseFirestore.collection(USER_COLLECTION_NAME).document(uid)
+                                .set(userMap)
+                                .addOnSuccessListener(aVoid -> future.complete(uid))
+                                .addOnFailureListener(e -> future.completeExceptionally(e));
+//                    } else {
+//                        future.completeExceptionally(task.getException());
+//                    }
+//                });
+
+        return future;
+    }
+
     public CompletableFuture<String> loginUser(String email, String password) {
         CompletableFuture<String> future = new CompletableFuture<>();
 
@@ -89,6 +126,8 @@ public class FirebaseRepository {
 
         return future;
     }
+
+
 
     /**
      * Check if a user is currently authenticated.
@@ -115,6 +154,33 @@ public class FirebaseRepository {
 
         return future;
     }
+
+    public CompletableFuture<List<User>> getAllUsers() {
+        CompletableFuture<List<User>> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(USER_COLLECTION_NAME)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> userList = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        String uid = documentSnapshot.getId();
+                        String email = documentSnapshot.getString("email");
+                        String firstName = documentSnapshot.getString("firstName");
+                        String lastName = documentSnapshot.getString("lastName");
+                        String userAuthority = documentSnapshot.getString("userAuthority");
+
+                        User user = new User(uid, email, firstName, lastName, userAuthority);
+                        userList.add(user);
+                    }
+
+                    future.complete(userList);
+                })
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+
+        return future;
+    }
+
 
     /**
      * Retrouver un document par uid
@@ -170,7 +236,35 @@ public class FirebaseRepository {
         return future;
     }
 
+    /**
+     * Supprimer le compte d'un utilisateur par son UID
+     *
+     * @param uid Identifiant de l'utilisateur à supprimer
+     * @return CompletableFuture indiquant si la suppression a réussi ou échoué
+     */
+    public CompletableFuture<Void> deleteAccountByUid(String uid) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        // Supprimez l'utilisateur de l'authentification Firebase en utilisant l'UID spécifié
+//        firebaseAuth. (uid)
+//                .addOnSuccessListener(aVoid -> {
+                    // L'utilisateur a été supprimé de l'authentification Firebase, maintenant supprimez ses données de Firestore
+                    firebaseFirestore.collection(USER_COLLECTION_NAME).document(uid)
+                            .delete()
+                            .addOnSuccessListener(aVoid1 -> future.complete(null))
+                            .addOnFailureListener(e -> future.completeExceptionally(e));
+//                })
+//                .addOnFailureListener(e -> future.completeExceptionally(e));
+
+        return future;
+    }
+
+
     public void logout(){
         firebaseAuth.signOut();
+    }
+
+    public FirebaseFirestore getFirebaseFirestore(){
+        return this.firebaseFirestore;
     }
 }
