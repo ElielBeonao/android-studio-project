@@ -16,26 +16,25 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.appcompat.widget.Toolbar;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.firestore.DocumentReference;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.uottawa.testnovigrad.R;
-import ca.uottawa.testnovigrad.fwk.OnUserEditButtonClickListener;
+import ca.uottawa.testnovigrad.fwk.OnEntityModelButtonClickListener;
 import ca.uottawa.testnovigrad.fwk.UserAdapter;
 import ca.uottawa.testnovigrad.models.User;
 import ca.uottawa.testnovigrad.repository.FirebaseRepository;
 import ca.uottawa.testnovigrad.repository.SharedPreferencesRepository;
 
-public class UserManagementActivity extends AppCompatActivity implements OnUserEditButtonClickListener {
+public class UserManagementActivity extends AppCompatActivity implements OnEntityModelButtonClickListener<User> {
 
     private static String TAG = UserManagementActivity.class.getName();
 
@@ -89,8 +88,6 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
 
         recyclerView = findViewById(R.id.recyclerUsersView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
 
         mainNavigationButton.setOnClickListener(navigateToMainListener);
         floatingActionButtonAddUser.setOnClickListener(addUserListener);

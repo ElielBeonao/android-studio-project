@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
 
-    private Button userManagementNavigationButton, logoutButton;
+    private Button userManagementNavigationButton, agencyManagementNavigationButton, serviceDeliveryManagementNavigationButton, logoutButton;
 
     private User currentUser;
 
@@ -55,6 +55,26 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private View.OnClickListener manageAgencyNavigationListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(getApplicationContext(), AgencyManagementActivity.class));
+            finish();
+
+        }
+    };
+
+    private View.OnClickListener manageServiceDeliveryNavigationListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(getApplicationContext(), ServiceDeliveryActivity.class));
+            finish();
+
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,10 +87,13 @@ public class MainActivity extends AppCompatActivity {
 
         logoutButton = findViewById(R.id.btn_logout);
         userManagementNavigationButton = findViewById(R.id.btn_user_management);
+        agencyManagementNavigationButton = findViewById(R.id.btn_agency_management);
+        serviceDeliveryManagementNavigationButton = findViewById(R.id.btn_customer_services_management);
 
         logoutButton.setOnClickListener(logoutCurrentUserListener);
         userManagementNavigationButton.setOnClickListener(manageUserNavigationListener);
-
+        agencyManagementNavigationButton.setOnClickListener(manageAgencyNavigationListener);
+        serviceDeliveryManagementNavigationButton.setOnClickListener(manageServiceDeliveryNavigationListener);
     }
 
     private void redirectToTargetByGivenUserRole(Context context){

@@ -14,6 +14,11 @@
     <string name="signup_title">Inscription</string>
     <string name="authentication_title">Authentification</string>
     <string name="email_address_label">Adresse e-mail</string>
+    <string name="name_label">Nom</string>
+    <string name="description_label">Description</string>
+    <string name="address_label">Addresse</string>
+    <string name="openedAt_label">Ouvert à</string>
+    <string name="closedAt_label">Fermé à</string>
     <string name="username_label">Nom Utilisateur</string>
     <string name="password_label">Mot de passe</string>
     <string name="firstname_label">Nom</string>
@@ -31,8 +36,9 @@
     <string name="user_role_client">Client</string>
     <string name="field_required_error">Ce champ est requis!</string>
     <string name="user_management_label">Gestion des utilisateurs</string>
+    <string name="agency_management_label">Gestion des succursales</string>
     <string name="customer_services_management_label">Les services clients</string>
-    <string name="welcome_text">Bienvenu %1$s,vous êtes connecté en tant que : %2$s</string>
+    <string name="welcome_text">Bienvenu %1$s, vous êtes connecté en tant que : %2$s</string>
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus

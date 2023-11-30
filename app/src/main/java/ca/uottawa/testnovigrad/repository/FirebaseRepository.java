@@ -10,13 +10,21 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.gson.Gson;
 
+import java.sql.Time;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
+import ca.uottawa.testnovigrad.models.Agency;
+import ca.uottawa.testnovigrad.models.ServiceDelivery;
 import ca.uottawa.testnovigrad.models.User;
 
 public class FirebaseRepository {
@@ -27,7 +35,9 @@ public class FirebaseRepository {
 
     public static String USER_COLLECTION_NAME = "users";
 
-//    public static String USER_COLLECTION_UID_KEY = "uid";
+    public static String COMPANY_COLLECTION_NAME = "companies";
+
+    public static String SERVICE_COLLECTION_NAME = "services";
 
     public static String USER_ROLE_CLIENT = "USER_CLIENT";
 
@@ -98,6 +108,9 @@ public class FirebaseRepository {
                         userMap.put("lastName", lastName);
 //                        userMap.put("username", username);
                         userMap.put("userAuthority", userAuthority);
+//                        if(userAuthority.equals(USER_ROLE_EMPLOYEE)){
+//                            userMap.put("company", null);
+//                        }
 
                         // Add the user information to Firestore
                         firebaseFirestore.collection(USER_COLLECTION_NAME).document(uid)
@@ -147,14 +160,6 @@ public class FirebaseRepository {
         return future;
     }
 
-    public CompletableFuture<Boolean> isAuthenticationTokenValid(String token){
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
-
-//        firebaseAuth.is
-
-        return future;
-    }
-
     public CompletableFuture<List<User>> getAllUsers() {
         CompletableFuture<List<User>> future = new CompletableFuture<>();
 
@@ -181,6 +186,97 @@ public class FirebaseRepository {
         return future;
     }
 
+    public CompletableFuture<String> createAgency(Agency agency){
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(COMPANY_COLLECTION_NAME)
+                .add(agency)
+                .addOnSuccessListener( agencyDoc -> future.complete(agencyDoc.get().getResult().get("id").toString()))
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+        return future;
+    }
+
+    public CompletableFuture<String> updateAgency(Agency agency){
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(COMPANY_COLLECTION_NAME)
+                .document(agency.getId())
+                .set(agency)
+                .addOnSuccessListener( aVoid -> future.complete(agency.getId()))
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+        return future;
+    }
+
+    public CompletableFuture<List<Agency>> getAllAgencies() {
+        CompletableFuture<List<Agency>> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(COMPANY_COLLECTION_NAME)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<Agency> agenceList = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        String id = documentSnapshot.getId();
+                        String name = documentSnapshot.getString("name");
+                        String address = documentSnapshot.getString("address");
+                        Date openedAt = documentSnapshot.getDate("openedAt");
+                        Date closedAt = documentSnapshot.getDate("closedAt");
+
+                        Agency agency = new Agency(id, name, address, openedAt , closedAt);
+                        agenceList.add(agency);
+                    }
+
+                    future.complete(agenceList);
+                })
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+
+        return future;
+    }
+
+    public CompletableFuture<List<ServiceDelivery>> getAllServiceDeliveries() {
+        CompletableFuture<List<ServiceDelivery>> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(SERVICE_COLLECTION_NAME)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<ServiceDelivery> serviceDeliveryList = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        String id = documentSnapshot.getId();
+                        String name = documentSnapshot.getString("name");
+                        String description = documentSnapshot.getString("description");
+
+                        ServiceDelivery serviceDelivery = new ServiceDelivery(id, name, description);
+                        serviceDeliveryList.add(serviceDelivery);
+                    }
+
+                    future.complete(serviceDeliveryList);
+                })
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+
+        return future;
+    }
+
+    public CompletableFuture<String> createServiceDelivery(ServiceDelivery serviceDelivery){
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(SERVICE_COLLECTION_NAME)
+                .add(serviceDelivery)
+                .addOnSuccessListener( serviceDeliveryJson -> future.complete(serviceDeliveryJson.get().getResult().get("id").toString()))
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+        return future;
+    }
+
+    public CompletableFuture<String> updateServiceDelivery(ServiceDelivery serviceDelivery){
+        CompletableFuture<String> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(SERVICE_COLLECTION_NAME)
+                .document(serviceDelivery.getId())
+                .set(serviceDelivery)
+                .addOnSuccessListener( aVoid -> future.complete(serviceDelivery.getId()))
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+        return future;
+    }
 
     /**
      * Retrouver un document par uid
@@ -270,5 +366,25 @@ public class FirebaseRepository {
 
     public FirebaseAuth getFirebaseAuth(){
         return  this.firebaseAuth;
+    }
+
+    public CompletionStage<Void> deleteAgency(String agencyId) {
+
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        firebaseFirestore.collection(COMPANY_COLLECTION_NAME).document(agencyId)
+                .delete()
+                .addOnSuccessListener(aVoid1 -> future.complete(null))
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+        return future;
+    }
+
+    public CompletionStage<Void> deleteServiceDelivery(String serviceDeliveryId) {
+
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        firebaseFirestore.collection(SERVICE_COLLECTION_NAME).document(serviceDeliveryId)
+                .delete()
+                .addOnSuccessListener(aVoid1 -> future.complete(null))
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+        return future;
     }
 }

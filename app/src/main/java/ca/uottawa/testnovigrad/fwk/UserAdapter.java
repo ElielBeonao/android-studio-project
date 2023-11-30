@@ -17,8 +17,8 @@ import ca.uottawa.testnovigrad.models.User;
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
     private static List<User> userList = new ArrayList<>();
 
-    private static OnUserEditButtonClickListener editButtonClickListener;
-    private static OnUserEditButtonClickListener deleteButtonClickListener;
+    private static OnEntityModelButtonClickListener editButtonClickListener;
+    private static OnEntityModelButtonClickListener deleteButtonClickListener;
 
     public UserAdapter(List<User> userList) {
         this.userList = userList;
@@ -89,11 +89,11 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         }
     }
 
-    public void setOnEditButtonClickListener(OnUserEditButtonClickListener listener) {
+    public void setOnEditButtonClickListener(OnEntityModelButtonClickListener listener) {
         this.editButtonClickListener = listener;
     }
 
-    public void setOnDeleteButtonClickListener(OnUserEditButtonClickListener listener) {
+    public void setOnDeleteButtonClickListener(OnEntityModelButtonClickListener listener) {
         this.deleteButtonClickListener = listener;
     }
 }
