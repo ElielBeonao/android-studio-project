@@ -78,10 +78,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             btnSupprimer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (editButtonClickListener != null) {
+                    if (deleteButtonClickListener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            editButtonClickListener.onDeleteButtonClick(userList.get(position));
+                            deleteButtonClickListener.onDeleteButtonClick(userList.get(position));
                         }
                     }
                 }

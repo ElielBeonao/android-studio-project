@@ -19,6 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.DocumentReference;
 
 import java.util.ArrayList;
@@ -46,6 +49,16 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
+    private FloatingActionButton floatingActionButtonAddUser;
+    private View.OnClickListener addUserListener = new View.OnClickListener(
+
+    ) {
+        @Override
+        public void onClick(View v) {
+            showNewUserDialog();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +72,10 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
 
         RecyclerView recyclerView = findViewById(R.id.recyclerUsersView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        floatingActionButtonAddUser = findViewById(R.id.fabAddUser);
+
+        floatingActionButtonAddUser.setOnClickListener(addUserListener);
 
         loadUsers(recyclerView);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -107,14 +124,106 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         }
     }
 
-    // Méthode pour afficher la boîte de dialogue de modification
-    private void showEditDialog(User user) {
+    private void showNewUserDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
 
         View dialogView = inflater.inflate(R.layout.dialog_edit_user, null);
         dialogBuilder.setView(dialogView);
 
+        TextInputEditText editTextEmailAddress = dialogView.findViewById(R.id.user_edit_email_address_input);
+        TextInputEditText editTextPassword = dialogView.findViewById(R.id.user_edit_password_input);
+        TextInputEditText editTextConfirmPassword = dialogView.findViewById(R.id.user_edit_confirm_password_input);
+        TextInputEditText editTextFirstName = dialogView.findViewById(R.id.user_edit_firstname_input);
+        TextInputEditText editTextLastName = dialogView.findViewById(R.id.user_edit_lastname_input);
+        RadioButton radioButtonUserRoleClient = dialogView.findViewById(R.id.user_edit_radio_user_role_client);
+        RadioButton radioButtonUserRoleEmployee = dialogView.findViewById(R.id.user_edit_radio_user_role_employee);
+        RadioButton radioButtonUserRoleAdmin = dialogView.findViewById(R.id.user_edit_radio_user_role_admin);
+
+        User user = new User();
+        editTextEmailAddress.setText(user.getEmail());
+        editTextFirstName.setText(user.getFirstName());
+        editTextLastName.setText(user.getLastName());
+
+        editTextPassword.setVisibility(View.VISIBLE);
+        editTextConfirmPassword.setVisibility(View.VISIBLE);
+
+
+        radioButtonUserRoleClient.setOnCheckedChangeListener( (buttonView, isChecked) -> {
+
+            if(isChecked){
+                radioButtonUserRoleEmployee.setChecked(false);
+                user.setUserAuthority(FirebaseRepository.USER_ROLE_CLIENT);
+            }
+        });
+
+        radioButtonUserRoleEmployee.setOnCheckedChangeListener( (buttonView, isChecked) -> {
+
+            if(isChecked){
+                radioButtonUserRoleClient.setChecked(false);
+                user.setUserAuthority(FirebaseRepository.USER_ROLE_EMPLOYEE);
+            }
+        });
+
+        radioButtonUserRoleAdmin.setOnCheckedChangeListener( (buttonView, isChecked) -> {
+
+            if(isChecked){
+                radioButtonUserRoleClient.setChecked(false);
+                user.setUserAuthority(FirebaseRepository.USER_ROLE_ADMINISTRATOR);
+            }
+        });
+
+        dialogBuilder.setPositiveButton(getString(R.string.edit_text), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Récupérez les nouvelles informations de l'utilisateur depuis les champs de la boîte de dialogue
+
+//                String emailAddress = editTextEmailAddress.getText().toString().trim();
+//                String password = editTextPassword.getText().toString().trim();
+//                String confirmPassword = editTextConfirmPassword.getText().toString().trim();
+//                String firstName = editTextFirstName.getText().toString().trim();
+//                String lastName = editTextLastName.getText().toString().trim();
+                String userRole = null;
+                if( radioButtonUserRoleAdmin.isChecked() ){
+                    userRole = FirebaseRepository.USER_ROLE_ADMINISTRATOR;
+
+                } else if( radioButtonUserRoleEmployee.isChecked() ){
+                    userRole = FirebaseRepository.USER_ROLE_EMPLOYEE;
+
+                } else if( radioButtonUserRoleClient.isChecked() ){
+                    userRole = FirebaseRepository.USER_ROLE_CLIENT;
+
+                }
+
+                if(isFormValid( editTextEmailAddress, editTextPassword, editTextConfirmPassword, editTextFirstName, editTextLastName)){
+                    createUser( editTextEmailAddress.getText().toString().trim(),
+                            editTextPassword.getText().toString().trim(),
+                            editTextFirstName.getText().toString().trim(),
+                            editTextLastName.getText().toString().trim(),
+                            userRole);
+
+                }else{
+                    Toast.makeText(UserManagementActivity.this, "Veuillez remplir tous les champs de ce formulaire!", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+        });
+
+        dialogBuilder.setNegativeButton(getString(R.string.cancel_text), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // L'utilisateur a annulé la modification
+            }
+        });
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+    }
+    // Méthode pour afficher la boîte de dialogue de modification
+    private void showEditUserDialog(User user) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        View dialogView = inflater.inflate(R.layout.dialog_edit_user, null);
+        dialogBuilder.setView(dialogView);
 
         EditText editTextEmailAddress = dialogView.findViewById(R.id.user_edit_email_address_input);
         EditText editTextFirstName = dialogView.findViewById(R.id.user_edit_firstname_input);
@@ -126,20 +235,22 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         editTextEmailAddress.setText(user.getEmail());
         editTextFirstName.setText(user.getFirstName());
         editTextLastName.setText(user.getLastName());
-        if(user.getUserAuthority().equals(FirebaseRepository.USER_ROLE_CLIENT)){
-            radioButtonUserRoleClient.setChecked(true);
-            radioButtonUserRoleEmployee.setChecked(false);
-            radioButtonUserRoleAdmin.setChecked(false);
 
-        }else if( user.getUserAuthority().equals(FirebaseRepository.USER_ROLE_EMPLOYEE) ){
-            radioButtonUserRoleClient.setChecked(false);
-            radioButtonUserRoleEmployee.setChecked(true);
-            radioButtonUserRoleAdmin.setChecked(false);
-        } else if ( user.getUserAuthority().equals(FirebaseRepository.USER_ROLE_ADMINISTRATOR)){
-            radioButtonUserRoleClient.setChecked(false);
-            radioButtonUserRoleEmployee.setChecked(false);
-            radioButtonUserRoleAdmin.setChecked(true);
-        }
+            if(user.getUserAuthority().equals(FirebaseRepository.USER_ROLE_CLIENT)){
+                radioButtonUserRoleClient.setChecked(true);
+                radioButtonUserRoleEmployee.setChecked(false);
+                radioButtonUserRoleAdmin.setChecked(false);
+
+            }else if( user.getUserAuthority().equals(FirebaseRepository.USER_ROLE_EMPLOYEE) ){
+                radioButtonUserRoleClient.setChecked(false);
+                radioButtonUserRoleEmployee.setChecked(true);
+                radioButtonUserRoleAdmin.setChecked(false);
+            } else if ( user.getUserAuthority().equals(FirebaseRepository.USER_ROLE_ADMINISTRATOR)){
+                radioButtonUserRoleClient.setChecked(false);
+                radioButtonUserRoleEmployee.setChecked(false);
+                radioButtonUserRoleAdmin.setChecked(true);
+            }
+
 
         radioButtonUserRoleClient.setOnCheckedChangeListener( (buttonView, isChecked) -> {
 
@@ -199,6 +310,26 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         alertDialog.show();
     }
 
+    private void createUser(String emailAddress, String password, String firstName, String lastName, String userRole){
+
+        firebaseRepository.createAccount(
+                emailAddress.trim(),
+                password.trim(),
+                firstName.trim(),
+                lastName.trim(),
+                userRole
+        ).thenAccept(userId -> {
+
+            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+            finish();
+
+        }).exceptionally(throwable -> {
+            Log.e(TAG,"Error creating user account: " + throwable.getMessage());
+            Toast.makeText(UserManagementActivity.this, "Une Erreur est survenue lors de la creation du compte. Veuillez contacter l'administrateur ", Toast.LENGTH_SHORT).show();
+            return null;
+        });
+    }
+
     private void updateUser(String uid, String emailAddress, String firstName, String lastName, String userRole){
 
         firebaseRepository.editAccount(uid, emailAddress, firstName, lastName, userRole)
@@ -247,13 +378,56 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         });
     }
 
+
+
     @Override
     public void onEditButtonClick(User user) {
-        showEditDialog(user);
+        showEditUserDialog(user);
     }
 
     @Override
     public void onDeleteButtonClick(User user) {
         showDeleteDialog(user);
+    }
+
+    private Boolean isFormValid(TextInputEditText emailAddressEditText, TextInputEditText passwordEditText, TextInputEditText confirmPasswordEditText, TextInputEditText firstNameEditText, TextInputEditText lastNameEditText){
+
+        String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+        if( emailAddressEditText.getText().toString().trim().length() == 0 ){
+            emailAddressEditText.setError(getString(R.string.field_required_error));
+            return false;
+        }else{
+            emailAddressEditText.setError(null);
+        }
+
+        if( !emailAddressEditText.getText().toString().trim().matches(emailPattern)){
+            emailAddressEditText.setError(getString(R.string.invalid_emailaddress));
+            return false;
+        }else{
+            emailAddressEditText.setError(null);
+        }
+
+        if( passwordEditText.getText().toString().trim().length() == 0 ){
+            passwordEditText.setError(getString(R.string.field_required_error));
+            return false;
+        }else{
+            passwordEditText.setError(null);
+        }
+
+        if( confirmPasswordEditText.getText().toString().trim().length() == 0 ){
+            confirmPasswordEditText.setError(getString(R.string.field_required_error));
+            return false;
+        }else{
+            confirmPasswordEditText.setError(null);
+        }
+
+        if( !passwordEditText.getText().toString().trim().equals(confirmPasswordEditText.getText().toString().trim()) ){
+            confirmPasswordEditText.setError(getString(R.string.password_confirmation_error));
+            return false;
+        }else{
+            confirmPasswordEditText.setError(null);
+        }
+
+        return true;
     }
 }

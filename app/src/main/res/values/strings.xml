@@ -6,6 +6,7 @@
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
+    <string name="add_text">Ajouter</string>
     <string name="edit_text">Modifier</string>
     <string name="delete_text">Supprimer</string>
     <string name="cancel_text">Annuler</string>

@@ -267,4 +267,8 @@ public class FirebaseRepository {
     public FirebaseFirestore getFirebaseFirestore(){
         return this.firebaseFirestore;
     }
+
+    public FirebaseAuth getFirebaseAuth(){
+        return  this.firebaseAuth;
+    }
 }

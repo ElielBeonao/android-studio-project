@@ -12,6 +12,10 @@ public class User implements Serializable {
 
     private String userCompany;
 
+    public User(){
+
+    }
+
     public User(String email, String firstName, String lastName, String userAuthority){
         this.email = email;
         this.firstName = firstName;
