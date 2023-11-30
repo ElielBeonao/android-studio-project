@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,6 +48,10 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
 
     private SharedPreferencesRepository sharedPreferencesRepository;
 
+    private RecyclerView recyclerView;
+
+    private ImageButton mainNavigationButton;
+
     private SwipeRefreshLayout swipeRefreshLayout;
 
     private FloatingActionButton floatingActionButtonAddUser;
@@ -59,6 +64,15 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         }
     };
 
+    private View.OnClickListener navigateToMainListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            finish();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,13 +82,17 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         Toolbar toolbar = findViewById(R.id.toolbar_user_management);
         setSupportActionBar(toolbar);
 
+        floatingActionButtonAddUser = findViewById(R.id.fabAddUser);
+        mainNavigationButton = findViewById(R.id.btn_user_management_navto_main);
+
         redirectToTargetByGivenUserRole(getApplicationContext());
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerUsersView);
+        recyclerView = findViewById(R.id.recyclerUsersView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        floatingActionButtonAddUser = findViewById(R.id.fabAddUser);
 
+
+        mainNavigationButton.setOnClickListener(navigateToMainListener);
         floatingActionButtonAddUser.setOnClickListener(addUserListener);
 
         loadUsers(recyclerView);
@@ -132,7 +150,9 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         dialogBuilder.setView(dialogView);
 
         TextInputEditText editTextEmailAddress = dialogView.findViewById(R.id.user_edit_email_address_input);
+        TextInputLayout boxPassword = dialogView.findViewById(R.id.tilUserManagementPassword);
         TextInputEditText editTextPassword = dialogView.findViewById(R.id.user_edit_password_input);
+        TextInputLayout boxConfirmPassword = dialogView.findViewById(R.id.tilUserManagementConfirmPassword);
         TextInputEditText editTextConfirmPassword = dialogView.findViewById(R.id.user_edit_confirm_password_input);
         TextInputEditText editTextFirstName = dialogView.findViewById(R.id.user_edit_firstname_input);
         TextInputEditText editTextLastName = dialogView.findViewById(R.id.user_edit_lastname_input);
@@ -144,15 +164,16 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         editTextEmailAddress.setText(user.getEmail());
         editTextFirstName.setText(user.getFirstName());
         editTextLastName.setText(user.getLastName());
+        user.setUserAuthority(FirebaseRepository.USER_ROLE_EMPLOYEE);
 
-        editTextPassword.setVisibility(View.VISIBLE);
-        editTextConfirmPassword.setVisibility(View.VISIBLE);
-
+        boxPassword.setVisibility(View.VISIBLE);
+        boxConfirmPassword.setVisibility(View.VISIBLE);
 
         radioButtonUserRoleClient.setOnCheckedChangeListener( (buttonView, isChecked) -> {
 
             if(isChecked){
                 radioButtonUserRoleEmployee.setChecked(false);
+                radioButtonUserRoleAdmin.setChecked(false);
                 user.setUserAuthority(FirebaseRepository.USER_ROLE_CLIENT);
             }
         });
@@ -161,6 +182,7 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
 
             if(isChecked){
                 radioButtonUserRoleClient.setChecked(false);
+                radioButtonUserRoleAdmin.setChecked(false);
                 user.setUserAuthority(FirebaseRepository.USER_ROLE_EMPLOYEE);
             }
         });
@@ -169,19 +191,15 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
 
             if(isChecked){
                 radioButtonUserRoleClient.setChecked(false);
+                radioButtonUserRoleEmployee.setChecked(false);
                 user.setUserAuthority(FirebaseRepository.USER_ROLE_ADMINISTRATOR);
             }
         });
 
-        dialogBuilder.setPositiveButton(getString(R.string.edit_text), new DialogInterface.OnClickListener() {
+        dialogBuilder.setPositiveButton(getString(R.string.add_text), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 // Récupérez les nouvelles informations de l'utilisateur depuis les champs de la boîte de dialogue
 
-//                String emailAddress = editTextEmailAddress.getText().toString().trim();
-//                String password = editTextPassword.getText().toString().trim();
-//                String confirmPassword = editTextConfirmPassword.getText().toString().trim();
-//                String firstName = editTextFirstName.getText().toString().trim();
-//                String lastName = editTextLastName.getText().toString().trim();
                 String userRole = null;
                 if( radioButtonUserRoleAdmin.isChecked() ){
                     userRole = FirebaseRepository.USER_ROLE_ADMINISTRATOR;
@@ -231,6 +249,12 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
         RadioButton radioButtonUserRoleClient = dialogView.findViewById(R.id.user_edit_radio_user_role_client);
         RadioButton radioButtonUserRoleEmployee = dialogView.findViewById(R.id.user_edit_radio_user_role_employee);
         RadioButton radioButtonUserRoleAdmin = dialogView.findViewById(R.id.user_edit_radio_user_role_admin);
+
+        TextInputLayout boxPassword = dialogView.findViewById(R.id.tilUserManagementPassword);
+        TextInputLayout boxConfirmPassword = dialogView.findViewById(R.id.tilUserManagementConfirmPassword);
+
+        boxPassword.setVisibility(View.GONE);
+        boxConfirmPassword.setVisibility(View.GONE);
 
         editTextEmailAddress.setText(user.getEmail());
         editTextFirstName.setText(user.getFirstName());
@@ -320,8 +344,7 @@ public class UserManagementActivity extends AppCompatActivity implements OnUserE
                 userRole
         ).thenAccept(userId -> {
 
-            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
-            finish();
+            loadUsers(recyclerView);
 
         }).exceptionally(throwable -> {
             Log.e(TAG,"Error creating user account: " + throwable.getMessage());
