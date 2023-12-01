@@ -92,7 +92,7 @@ public class FirebaseRepository {
         return future;
     }
 
-    public CompletableFuture<String> editAccount(String uid, String emailAddress, String firstName, String lastName, String userAuthority) {
+    public CompletableFuture<String> editAccount(String uid, String emailAddress, String firstName, String lastName, String userAuthority, String userCompany) {
         CompletableFuture<String> future = new CompletableFuture<>();
 
         // Create a new user with email and password
@@ -108,9 +108,10 @@ public class FirebaseRepository {
                         userMap.put("lastName", lastName);
 //                        userMap.put("username", username);
                         userMap.put("userAuthority", userAuthority);
-//                        if(userAuthority.equals(USER_ROLE_EMPLOYEE)){
-//                            userMap.put("company", null);
-//                        }
+                        if(userAuthority.equals(USER_ROLE_EMPLOYEE)){
+                            if( userCompany != null )
+                                userMap.put("company", userCompany);
+                        }
 
                         // Add the user information to Firestore
                         firebaseFirestore.collection(USER_COLLECTION_NAME).document(uid)

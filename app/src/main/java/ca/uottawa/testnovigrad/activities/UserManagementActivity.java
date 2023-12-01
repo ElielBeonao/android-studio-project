@@ -317,7 +317,7 @@ public class UserManagementActivity extends AppCompatActivity implements OnEntit
                 }
 
                 // Mettez à jour l'utilisateur dans Firebase Firestore
-                updateUser(user.getUid(), newEmailAddress, newFirstName, newLastName, newUserRole);
+                updateUser(user.getUid(), newEmailAddress, newFirstName, newLastName, newUserRole, user.getUserCompany());
             }
         });
 
@@ -350,9 +350,9 @@ public class UserManagementActivity extends AppCompatActivity implements OnEntit
         });
     }
 
-    private void updateUser(String uid, String emailAddress, String firstName, String lastName, String userRole){
+    private void updateUser(String uid, String emailAddress, String firstName, String lastName, String userRole, String userCompany){
 
-        firebaseRepository.editAccount(uid, emailAddress, firstName, lastName, userRole)
+        firebaseRepository.editAccount(uid, emailAddress, firstName, lastName, userRole, userCompany)
                 .thenAccept( userId -> {
 
                     Toast.makeText(getApplicationContext(), "Informations modifiees avec succes", Toast.LENGTH_SHORT).show();
