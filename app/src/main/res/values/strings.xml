@@ -7,6 +7,7 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="add_text">Ajouter</string>
+    <string name="save_text">Enregistrer</string>
     <string name="edit_text">Modifier</string>
     <string name="delete_text">Supprimer</string>
     <string name="cancel_text">Annuler</string>
@@ -38,6 +39,8 @@
     <string name="user_management_label">Gestion des utilisateurs</string>
     <string name="agency_management_label">Gestion des succursales</string>
     <string name="customer_services_management_label">Les services clients</string>
+    <string name="change_agency_detail_management_label">Détail Succursale: %1$s</string>
+    <string name="change_agency_services_management_label">Prestations delivrées par: %1$s</string>
     <string name="welcome_text">Bienvenu %1$s, vous êtes connecté en tant que : %2$s</string>
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris

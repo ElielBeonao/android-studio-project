@@ -1,9 +1,21 @@
 package ca.uottawa.testnovigrad.models;
 
+import com.google.firebase.Timestamp;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.JsonAdapter;
+
+import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import ca.uottawa.testnovigrad.fwk.ApplicationUtils;
 
 public class Agency {
 
@@ -13,9 +25,11 @@ public class Agency {
 
     private String address;
 
-    private Date openedAt;
+//    @JsonAdapter(ApplicationUtils.DateDeserializer.class)
+    private Timestamp openedAt;
 
-    private Date closedAt;
+//    @JsonAdapter(ApplicationUtils.DateDeserializer.class)
+    private Timestamp closedAt;
 
     private List<ServiceDelivery> servicesDelivery;
 
@@ -23,7 +37,7 @@ public class Agency {
         servicesDelivery = new ArrayList<>();
     }
 
-    public Agency(String id, String name, String address, Date openedAt, Date closedAt) {
+    public Agency(String id, String name, String address, Timestamp openedAt, Timestamp closedAt) {
         this.id = id;
         this.name = name;
         this.address = address;
@@ -66,19 +80,19 @@ public class Agency {
         this.address = address;
     }
 
-    public Date getOpenedAt() {
+    public Timestamp getOpenedAt() {
         return openedAt;
     }
 
-    public void setOpenedAt(Date openedAt) {
+    public void setOpenedAt(Timestamp openedAt) {
         this.openedAt = openedAt;
     }
 
-    public Date getClosedAt() {
+    public Timestamp getClosedAt() {
         return closedAt;
     }
 
-    public void setClosedAt(Date closedAt) {
+    public void setClosedAt(Timestamp closedAt) {
         this.closedAt = closedAt;
     }
 

@@ -60,10 +60,10 @@ public class AgencyAdapter extends RecyclerView.Adapter<AgencyAdapter.AgencyView
             agencyNameTextView.setText(agency.getName());
             agencyAddressTextView.setText(agency.getAddress());
             if( agency.getOpenedAt() != null)
-                agencyOpenedAtTextView.setText(ApplicationUtils.convertToDateTimeString(agency.getOpenedAt()));
+                agencyOpenedAtTextView.setText(ApplicationUtils.convertToDateTimeString(agency.getOpenedAt().toDate()));
 
             if( agency.getClosedAt() != null)
-                agencyClosedAtTextView.setText(ApplicationUtils.convertToDateTimeString(agency.getClosedAt()));
+                agencyClosedAtTextView.setText(ApplicationUtils.convertToDateTimeString(agency.getClosedAt().toDate()));
 
             btnModifier.setOnClickListener(new View.OnClickListener() {
                 @Override

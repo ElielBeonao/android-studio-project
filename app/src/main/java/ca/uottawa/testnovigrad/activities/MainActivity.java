@@ -9,13 +9,17 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +27,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import ca.uottawa.testnovigrad.R;
+import ca.uottawa.testnovigrad.fwk.ApplicationUtils;
 import ca.uottawa.testnovigrad.models.Agency;
 import ca.uottawa.testnovigrad.models.User;
 import ca.uottawa.testnovigrad.repository.FirebaseRepository;
@@ -38,9 +43,12 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView textView;
 
-    private Button userManagementNavigationButton, agencyManagementNavigationButton, serviceDeliveryManagementNavigationButton, logoutButton;
+    private Button currentAgencyDetailEditButton, currentAgencyServicesEditButton, userManagementNavigationButton, agencyManagementNavigationButton, serviceDeliveryManagementNavigationButton;
+    private ImageButton logoutButton;
 
     private User currentUser;
+
+    private Agency currentAgency;
 
     private View.OnClickListener logoutCurrentUserListener = new View.OnClickListener(){
 
@@ -82,6 +90,14 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private View.OnClickListener manageAgencyDetailNavigationListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            showEditAgencyDialog(currentAgency);
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,8 +106,12 @@ public class MainActivity extends AppCompatActivity {
         redirectToTargetByGivenUserRole(getApplicationContext());
         setUnattachedEmployee(currentUser);
 
+
         textView = findViewById(R.id.hello_word);
         textView.setText(String.format(getString(R.string.welcome_text), currentUser.getFirstName(), currentUser.getUserAuthority()));
+
+        currentAgencyDetailEditButton =  findViewById(R.id.btn_edit_current_agency_detail_management);
+        currentAgencyServicesEditButton = findViewById(R.id.btn_edit_current_agency_services_management);
 
         logoutButton = findViewById(R.id.btn_logout);
         userManagementNavigationButton = findViewById(R.id.btn_user_management);
@@ -102,6 +122,12 @@ public class MainActivity extends AppCompatActivity {
         userManagementNavigationButton.setOnClickListener(manageUserNavigationListener);
         agencyManagementNavigationButton.setOnClickListener(manageAgencyNavigationListener);
         serviceDeliveryManagementNavigationButton.setOnClickListener(manageServiceDeliveryNavigationListener);
+
+        displayAdaptedControls(currentUser);
+
+//        currentAgencyDetailEditButton.setOnClickListener(manageAgencyDetailNavigationListener);
+//        currentAgencyServicesEditButton.setOnClickListener(manageAgencyDetailNavigationListener);
+
     }
 
     private void redirectToTargetByGivenUserRole(Context context){
@@ -117,6 +143,23 @@ public class MainActivity extends AppCompatActivity {
     private void setUnattachedEmployee(User currentUser){
         if( currentUser.getUserAuthority().equals(FirebaseRepository.USER_ROLE_EMPLOYEE) && currentUser.getUserCompany() == null){
             loadAllAgencies(currentUser);
+        }
+        if( currentUser.getUserCompany() != null ){
+            firebaseRepository.retrieveAgencyByUid(currentUser.getUserCompany())
+                    .thenAccept( agencyFound ->{
+                        currentAgency = agencyFound;
+                        currentAgencyDetailEditButton.setText(String.format(getString(R.string.change_agency_detail_management_label), currentAgency.getName()));
+                        currentAgencyServicesEditButton.setText(String.format(getString(R.string.change_agency_services_management_label), currentAgency.getName()));
+
+                        currentAgencyDetailEditButton.setOnClickListener(manageAgencyDetailNavigationListener);
+                        currentAgencyServicesEditButton.setOnClickListener(manageAgencyDetailNavigationListener);
+
+                    })
+                    .exceptionally(throwable -> {
+                        Log.d(TAG, throwable.getMessage());
+                        Toast.makeText(getApplicationContext(), "Unable to fecth current agency", Toast.LENGTH_SHORT).show();
+                        return null;
+                    });
         }
     }
 
@@ -149,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Selected Agency:"+ selectedAgency.toString(), Toast.LENGTH_SHORT).show();
                 firebaseRepository.editAccount(currentUser.getUid(), currentUser.getEmail(), currentUser.getFirstName(), currentUser.getLastName(), currentUser.getUserAuthority(), selectedAgency.getId())
                         .thenAccept( userId -> {
-
+                            sharedPreferencesRepository.setCurrentUser(new User(currentUser.getUid(), currentUser.getEmail(), currentUser.getFirstName(), currentUser.getLastName(), currentUser.getUserAuthority(), selectedAgency.getId()));
                             Toast.makeText(getApplicationContext(), "Informations modifiees avec succes", Toast.LENGTH_SHORT).show();
                         })
                         .exceptionally(throwable -> {
@@ -162,5 +205,131 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void displayAdaptedControls(User currentUser){
+        if (currentUser.getUserAuthority().equals(FirebaseRepository.USER_ROLE_ADMINISTRATOR)){
+
+            userManagementNavigationButton.setVisibility(View.VISIBLE);
+            agencyManagementNavigationButton.setVisibility(View.VISIBLE);
+            serviceDeliveryManagementNavigationButton.setVisibility(View.VISIBLE);
+
+            currentAgencyServicesEditButton.setVisibility(View.GONE);
+            currentAgencyDetailEditButton.setVisibility(View.GONE);
+
+        }else if( currentUser.getUserAuthority().equals(FirebaseRepository.USER_ROLE_EMPLOYEE) ){
+
+            currentAgencyServicesEditButton.setVisibility(View.VISIBLE);
+            currentAgencyDetailEditButton.setVisibility(View.VISIBLE);
+
+            userManagementNavigationButton.setVisibility(View.GONE);
+            agencyManagementNavigationButton.setVisibility(View.GONE);
+            serviceDeliveryManagementNavigationButton.setVisibility(View.GONE);
+        } else{
+            currentAgencyServicesEditButton.setVisibility(View.GONE);
+            currentAgencyDetailEditButton.setVisibility(View.GONE);
+
+            userManagementNavigationButton.setVisibility(View.GONE);
+            agencyManagementNavigationButton.setVisibility(View.GONE);
+            serviceDeliveryManagementNavigationButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void showEditAgencyDialog(Agency agency) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        View dialogView = inflater.inflate(R.layout.dialog_edit_agency, null);
+        dialogBuilder.setView(dialogView);
+
+        TextInputEditText editTextAgencyName = dialogView.findViewById(R.id.agency_edit_name_input);
+        TextInputEditText editTextAgencyAddress = dialogView.findViewById(R.id.agency_edit_address_input);
+        TextInputEditText editTextAgencyOpenedAt = dialogView.findViewById(R.id.agency_edit_openedat_input);
+        TextInputEditText editTextAgencyClosedAt = dialogView.findViewById(R.id.agency_edit_closedat_input);
+
+        editTextAgencyName.setText(agency.getName());
+        editTextAgencyAddress.setText(agency.getAddress());
+        if(agency.getOpenedAt() != null) {
+            editTextAgencyOpenedAt.setText(ApplicationUtils.convertToDateTimeString(agency.getOpenedAt().toDate()));
+        }
+
+        if(agency.getClosedAt() != null){
+            editTextAgencyClosedAt.setText(ApplicationUtils.convertToDateTimeString(agency.getClosedAt().toDate()));
+        }
+
+
+        dialogBuilder.setPositiveButton(getString(R.string.save_text), new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if( isFormValid(editTextAgencyName, editTextAgencyAddress, editTextAgencyOpenedAt, editTextAgencyClosedAt)){
+
+                    agency.setName(editTextAgencyName.getText().toString().trim());
+                    agency.setAddress(editTextAgencyAddress.getText().toString().trim());
+                    agency.setOpenedAt(new Timestamp(ApplicationUtils.convertTimeStringToDate(editTextAgencyOpenedAt.getText().toString().trim())));
+                    agency.setClosedAt(new Timestamp(ApplicationUtils.convertTimeStringToDate(editTextAgencyClosedAt.getText().toString().trim())));
+
+                    editAgency(agency);
+                }
+            }
+        });
+
+        dialogBuilder.setNegativeButton(getString(R.string.cancel_text), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // L'utilisateur a annulé la modification
+            }
+        });
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
+    }
+
+    private Boolean isFormValid(TextInputEditText nameEditText, TextInputEditText addressEditText, TextInputEditText openedAtEditText, TextInputEditText closedAtEditText){
+
+        if( nameEditText.getText().toString().trim().length() == 0 ){
+            nameEditText.setError(getString(R.string.field_required_error));
+            return false;
+        }else{
+            nameEditText.setError(null);
+        }
+
+        if( addressEditText.getText().toString().trim().length() == 0 ){
+            addressEditText.setError(getString(R.string.field_required_error));
+            return false;
+        }else{
+            addressEditText.setError(null);
+        }
+
+        if( openedAtEditText.getText().toString().trim().length() == 0 ){
+            openedAtEditText.setError(getString(R.string.field_required_error));
+            return false;
+        }else{
+            openedAtEditText.setError(null);
+        }
+
+        if( closedAtEditText.getText().toString().trim().length() == 0 ){
+            closedAtEditText.setError(getString(R.string.field_required_error));
+            return false;
+        }else{
+            closedAtEditText.setError(null);
+        }
+
+        return true;
+    }
+
+    private void editAgency(Agency agency){
+        firebaseRepository.updateAgency(agency).thenAccept( agencyId -> {
+            if(agencyId != null){
+                Toast.makeText(getApplicationContext(), "Agence a été modifiée avec succes!", Toast.LENGTH_SHORT).show();
+
+            }else{
+                Toast.makeText(getApplicationContext(), "L'agence n'a pu être modifiée!!!", Toast.LENGTH_SHORT).show();
+            }
+
+        }).exceptionally(throwable -> {
+            Log.d(TAG, throwable.getMessage());
+            Toast.makeText(getApplicationContext(), "Une erreur est suvenue lors de la creation!!!", Toast.LENGTH_SHORT).show();
+            return null;
+        });
     }
 }

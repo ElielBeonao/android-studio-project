@@ -31,6 +31,15 @@ public class User implements Serializable {
         this.userAuthority = userAuthority;
     }
 
+    public User(String uid, String email, String firstName, String lastName, String userAuthority, String userCompany){
+        this.uid = uid;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.userAuthority = userAuthority;
+        this.userCompany = userCompany;
+    }
+
     public String getUid() {
         return uid;
     }

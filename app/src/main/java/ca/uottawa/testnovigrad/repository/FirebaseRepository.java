@@ -11,6 +11,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 
 import java.sql.Time;
 import java.time.LocalDateTime;
@@ -23,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import ca.uottawa.testnovigrad.fwk.ApplicationUtils;
 import ca.uottawa.testnovigrad.models.Agency;
 import ca.uottawa.testnovigrad.models.ServiceDelivery;
 import ca.uottawa.testnovigrad.models.User;
@@ -218,12 +221,14 @@ public class FirebaseRepository {
 
                     for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
                         String id = documentSnapshot.getId();
-                        String name = documentSnapshot.getString("name");
-                        String address = documentSnapshot.getString("address");
-                        Date openedAt = documentSnapshot.getDate("openedAt");
-                        Date closedAt = documentSnapshot.getDate("closedAt");
+//                        String name = documentSnapshot.getString("name");
+//                        String address = documentSnapshot.getString("address");
+//                        Date openedAt = documentSnapshot.getDate("openedAt");
+//                        Date closedAt = documentSnapshot.getDate("closedAt");
 
-                        Agency agency = new Agency(id, name, address, openedAt , closedAt);
+//                        Agency agency = new Agency(id, name, address, openedAt , closedAt);
+                        Agency agency = formatDataFromFirestore(documentSnapshot, Agency.class);
+                        agency.setId(id);
                         agenceList.add(agency);
                     }
 
@@ -387,5 +392,25 @@ public class FirebaseRepository {
                 .addOnSuccessListener(aVoid1 -> future.complete(null))
                 .addOnFailureListener(e -> future.completeExceptionally(e));
         return future;
+    }
+
+    public CompletableFuture<Agency> retrieveAgencyByUid( String uid) {
+        CompletableFuture<Agency> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(COMPANY_COLLECTION_NAME).document(uid)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> future.complete( formatDataFromFirestore(documentSnapshot, Agency.class)))
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+
+        return future;
+    }
+
+    private <T> T formatDataFromFirestore(DocumentSnapshot documentSnapshot, Class<T> valueType){
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class, new ApplicationUtils.DateDeserializer())
+                .create();
+        JsonElement jsonElement = gson.toJsonTree(documentSnapshot.getData());
+
+        return gson.fromJson(jsonElement, valueType);
     }
 }

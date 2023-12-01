@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.Timestamp;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -185,11 +186,14 @@ public class AgencyManagementActivity extends AppCompatActivity implements OnEnt
 
         editTextAgencyName.setText(agency.getName());
         editTextAgencyAddress.setText(agency.getAddress());
-        if(agency.getOpenedAt() != null)
-            editTextAgencyOpenedAt.setText(ApplicationUtils.convertToDateTimeString(agency.getOpenedAt()));
+        if(agency.getOpenedAt() != null) {
+            editTextAgencyOpenedAt.setText(ApplicationUtils.convertToDateTimeString(agency.getOpenedAt().toDate()));
+        }
 
-        if(agency.getClosedAt() != null)
-            editTextAgencyClosedAt.setText(ApplicationUtils.convertToDateTimeString(agency.getClosedAt()));
+        if(agency.getClosedAt() != null){
+            editTextAgencyClosedAt.setText(ApplicationUtils.convertToDateTimeString(agency.getClosedAt().toDate()));
+        }
+
 
         dialogBuilder.setPositiveButton(getString(R.string.add_text), new DialogInterface.OnClickListener() {
 
@@ -199,8 +203,10 @@ public class AgencyManagementActivity extends AppCompatActivity implements OnEnt
 
                     agency.setName(editTextAgencyName.getText().toString().trim());
                     agency.setAddress(editTextAgencyAddress.getText().toString().trim());
-                    agency.setOpenedAt(ApplicationUtils.convertTimeStringToDate(editTextAgencyOpenedAt.getText().toString().trim()));
-                    agency.setClosedAt(ApplicationUtils.convertTimeStringToDate(editTextAgencyClosedAt.getText().toString().trim()));
+                    agency.setOpenedAt(new Timestamp(ApplicationUtils.convertTimeStringToDate(editTextAgencyOpenedAt.getText().toString().trim())));
+                    agency.setClosedAt(new Timestamp(ApplicationUtils.convertTimeStringToDate(editTextAgencyClosedAt.getText().toString().trim())));
+//                    agency.setOpenedAt(ApplicationUtils.convertTimeStringToDate(editTextAgencyOpenedAt.getText().toString().trim()));
+//                    agency.setClosedAt(ApplicationUtils.convertTimeStringToDate(editTextAgencyClosedAt.getText().toString().trim()));
 
                     if(agency.getId() == null){
                         addAgency(agency);
