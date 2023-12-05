@@ -79,8 +79,8 @@ public class FirebaseRepository {
                         userMap.put("email", emailAddress);
                         userMap.put("firstName", firstName);
                         userMap.put("lastName", lastName);
-//                        userMap.put("username", username);
                         userMap.put("userAuthority", userAuthority);
+                        userMap.put("userCompany", null);
 
                         // Add the user information to Firestore
                         firebaseFirestore.collection(USER_COLLECTION_NAME).document(uid)
@@ -98,33 +98,23 @@ public class FirebaseRepository {
     public CompletableFuture<String> editAccount(String uid, String emailAddress, String firstName, String lastName, String userAuthority, String userCompany) {
         CompletableFuture<String> future = new CompletableFuture<>();
 
-        // Create a new user with email and password
-//        firebaseAuth. (new com.google.firebase.firestore.auth.User(uid))
-//                .addOnCompleteListener(task -> {
-//                    if (task.isSuccessful()) {
-//                        String uid = task.getResult().getUser().getUid();
-
-                        // Once the user is created, you can store additional information in Firestore
-                        Map<String, Object> userMap = new HashMap<>();
-                        userMap.put("email", emailAddress);
-                        userMap.put("firstName", firstName);
-                        userMap.put("lastName", lastName);
-//                        userMap.put("username", username);
-                        userMap.put("userAuthority", userAuthority);
-                        if(userAuthority.equals(USER_ROLE_EMPLOYEE)){
-                            if( userCompany != null )
-                                userMap.put("company", userCompany);
+                        if(!userAuthority.equals(USER_ROLE_EMPLOYEE)){
+                            userCompany = null;
                         }
-
                         // Add the user information to Firestore
-                        firebaseFirestore.collection(USER_COLLECTION_NAME).document(uid)
-                                .set(userMap)
+                        firebaseFirestore
+                                .collection(USER_COLLECTION_NAME)
+                                .document(uid)
+                                .set(new User(uid,
+                                        emailAddress,
+                                        firstName,
+                                        lastName,
+                                        userAuthority,
+                                        userCompany
+                                        )
+                                )
                                 .addOnSuccessListener(aVoid -> future.complete(uid))
                                 .addOnFailureListener(e -> future.completeExceptionally(e));
-//                    } else {
-//                        future.completeExceptionally(task.getException());
-//                    }
-//                });
 
         return future;
     }
@@ -195,7 +185,10 @@ public class FirebaseRepository {
 
         firebaseFirestore.collection(COMPANY_COLLECTION_NAME)
                 .add(agency)
-                .addOnSuccessListener( agencyDoc -> future.complete(agencyDoc.get().getResult().get("id").toString()))
+                .addOnSuccessListener(agencyJson -> {
+                    String documentId = agencyJson.getId();
+                    future.complete(documentId);
+                })
                 .addOnFailureListener(e -> future.completeExceptionally(e));
         return future;
     }
@@ -268,7 +261,10 @@ public class FirebaseRepository {
 
         firebaseFirestore.collection(SERVICE_COLLECTION_NAME)
                 .add(serviceDelivery)
-                .addOnSuccessListener( serviceDeliveryJson -> future.complete(serviceDeliveryJson.get().getResult().get("id").toString()))
+                .addOnSuccessListener(serviceDeliveryJson -> {
+                    String documentId = serviceDeliveryJson.getId();
+                    future.complete(documentId);
+                })
                 .addOnFailureListener(e -> future.completeExceptionally(e));
         return future;
     }
@@ -400,6 +396,17 @@ public class FirebaseRepository {
         firebaseFirestore.collection(COMPANY_COLLECTION_NAME).document(uid)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> future.complete( formatDataFromFirestore(documentSnapshot, Agency.class)))
+                .addOnFailureListener(e -> future.completeExceptionally(e));
+
+        return future;
+    }
+
+    public CompletableFuture<User> retrieveUserByUid( String uid) {
+        CompletableFuture<User> future = new CompletableFuture<>();
+
+        firebaseFirestore.collection(USER_COLLECTION_NAME).document(uid)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> future.complete( formatDataFromFirestore(documentSnapshot, User.class)))
                 .addOnFailureListener(e -> future.completeExceptionally(e));
 
         return future;

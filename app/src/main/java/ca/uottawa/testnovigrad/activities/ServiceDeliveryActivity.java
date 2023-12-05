@@ -101,7 +101,8 @@ public class ServiceDeliveryActivity extends AppCompatActivity implements OnEnti
 
 
     private void addServiceDelivery(ServiceDelivery serviceDelivery){
-        firebaseRepository.createServiceDelivery(serviceDelivery).thenAccept( serviceDeliveryId -> {
+        firebaseRepository.createServiceDelivery(serviceDelivery).
+                thenAccept( serviceDeliveryId -> {
             if(serviceDeliveryId != null){
                 Toast.makeText(getApplicationContext(), "Une prestation de service a été créée avec succes!", Toast.LENGTH_SHORT).show();
 

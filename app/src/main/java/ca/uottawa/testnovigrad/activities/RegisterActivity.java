@@ -163,19 +163,5 @@ public class RegisterActivity extends AppCompatActivity {
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
             finish();
         }
-
-//        firebaseRepository.isUserAuthenticated()
-//                .thenAccept(isAuthenticated -> {
-//                    if (isAuthenticated) {
-//                        Toast.makeText(getApplicationContext(), "User authenticated", Toast.LENGTH_LONG).show();
-//                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-//                        finish();
-//                    }
-//                })
-//                .exceptionally(throwable -> {
-//                    Log.d(TAG, throwable.getMessage());
-//                    Toast.makeText(getApplicationContext(), "Unable to check if user is authenticated", Toast.LENGTH_SHORT).show();
-//                    return null;
-//                });
     }
 }

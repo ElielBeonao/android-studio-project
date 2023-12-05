@@ -41,6 +41,7 @@
     <string name="customer_services_management_label">Les services clients</string>
     <string name="change_agency_detail_management_label">Détail Succursale: %1$s</string>
     <string name="change_agency_services_management_label">Prestations delivrées par: %1$s</string>
+    <string name="select_agency_services_management_label">Selectionnez les Prestations delivrées par: %1$s</string>
     <string name="welcome_text">Bienvenu %1$s, vous êtes connecté en tant que : %2$s</string>
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris

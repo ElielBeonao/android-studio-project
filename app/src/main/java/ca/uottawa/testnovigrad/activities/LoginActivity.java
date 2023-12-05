@@ -54,28 +54,33 @@ public class LoginActivity extends AppCompatActivity {
                 ).thenAccept(userId -> {
 
                     if(userId != null && !userId.isEmpty()){
-                        firebaseRepository.retrieveDocumentByUid(FirebaseRepository.USER_COLLECTION_NAME, userId)
-                                .thenAccept(documentSnapshot -> {
-                                    if (documentSnapshot.exists()) {
-                                        Map<String, Object> userMap = documentSnapshot.getData();
+                        firebaseRepository
+                                .retrieveUserByUid(userId)
+                                .thenAccept( userAuthenticated -> {
 
+                                    if (userAuthenticated != null) {
+//                                        Map<String, Object> userMap = documentSnapshot.getData();
+
+//                                        User authenicatedUser =
+                                        userAuthenticated.setUid(userId);
                                         sharedPreferencesRepository.setCurrentUser(
-                                                new User(userId,
-                                                        userMap.get("email").toString(),
-                                                        userMap.get("firstName").toString(),
-                                                        userMap.get("lastName").toString(),
-                                                        userMap.get("userAuthority").toString()
-                                                )
+                                                userAuthenticated
                                         );
-                                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                                        finish();
+
+                                        if(sharedPreferencesRepository.getCurrentUser() != null){
+                                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                            finish();
+                                        }else{
+                                            Toast.makeText(LoginActivity.this, "Les informations de l'utilisateur sont irrecuperables. Impossible de poursuivre", Toast.LENGTH_SHORT).show();
+                                        }
+
                                     }else{
                                         Toast.makeText(LoginActivity.this, "Les informations de l'utilisateur sont inexistantes. Impossible de poursuivre", Toast.LENGTH_SHORT).show();
                                     }
                                 })
                                 .exceptionally(throwable -> {
                                     Log.e(TAG,"Error during current user information fetching: " + throwable.getMessage());
-                                    Toast.makeText(LoginActivity.this, "Une Erreur est survenue lors de la recuperation des informations de la session. Veuillez contacter l'administrateur ", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getApplicationContext(), "Une Erreur est survenue lors de la recuperation des informations de la session. Veuillez contacter l'administrateur ", Toast.LENGTH_SHORT).show();
                                     return null;
                                 });
 
@@ -95,9 +100,7 @@ public class LoginActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        sharedPreferencesRepository = new SharedPreferencesRepository(getApplicationContext());
-
-        redirectToTargetByGivenUserRole(getApplicationContext());
+        redirectToTargetByGivenUserRole(this);
 
         emailAddressEditText = findViewById(R.id.login_email_address_input);
         passwordEditText = findViewById(R.id.login_password_input);
@@ -108,27 +111,20 @@ public class LoginActivity extends AppCompatActivity {
         navigationButton.setOnClickListener(navigationListener);
     }
 
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        redirectToTargetByGivenUserRole(getApplicationContext());
+    }
+
     private void redirectToTargetByGivenUserRole(Context context){
         firebaseRepository = new FirebaseRepository();
         sharedPreferencesRepository = new SharedPreferencesRepository(context);
         if(sharedPreferencesRepository.getCurrentUser() != null){
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            startActivity(new Intent(context, MainActivity.class));
             finish();
         }
-
-//        firebaseRepository.isUserAuthenticated()
-//                .thenAccept(isAuthenticated -> {
-//                    if (isAuthenticated) {
-//                        Toast.makeText(getApplicationContext(), "User authenticated", Toast.LENGTH_LONG).show();
-//                        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-//                        finish();
-//                    }
-//                })
-//                .exceptionally(throwable -> {
-//                    Log.d(TAG, throwable.getMessage());
-//                    Toast.makeText(getApplicationContext(), "Unable to check if user is authenticated", Toast.LENGTH_SHORT).show();
-//                    return null;
-//                });
     }
 
     private Boolean isFormValid(){

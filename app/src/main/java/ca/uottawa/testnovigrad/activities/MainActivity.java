@@ -2,7 +2,9 @@ package ca.uottawa.testnovigrad.activities;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,13 +24,16 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import ca.uottawa.testnovigrad.R;
 import ca.uottawa.testnovigrad.fwk.ApplicationUtils;
+import ca.uottawa.testnovigrad.fwk.OnMultiSelectListener;
 import ca.uottawa.testnovigrad.models.Agency;
+import ca.uottawa.testnovigrad.models.ServiceDelivery;
 import ca.uottawa.testnovigrad.models.User;
 import ca.uottawa.testnovigrad.repository.FirebaseRepository;
 import ca.uottawa.testnovigrad.repository.SharedPreferencesRepository;
@@ -90,21 +95,12 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private View.OnClickListener manageAgencyDetailNavigationListener = new View.OnClickListener(){
-
-        @Override
-        public void onClick(View v) {
-            showEditAgencyDialog(currentAgency);
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        redirectToTargetByGivenUserRole(getApplicationContext());
-        setUnattachedEmployee(currentUser);
+        setContentView(R.layout.activity_main);
+        redirectToTargetByGivenUserRole(this);
 
 
         textView = findViewById(R.id.hello_word);
@@ -125,9 +121,6 @@ public class MainActivity extends AppCompatActivity {
 
         displayAdaptedControls(currentUser);
 
-//        currentAgencyDetailEditButton.setOnClickListener(manageAgencyDetailNavigationListener);
-//        currentAgencyServicesEditButton.setOnClickListener(manageAgencyDetailNavigationListener);
-
     }
 
     private void redirectToTargetByGivenUserRole(Context context){
@@ -135,8 +128,10 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferencesRepository = new SharedPreferencesRepository(context);
         currentUser = sharedPreferencesRepository.getCurrentUser();
         if(currentUser == null){
-            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+            startActivity(new Intent(context, LoginActivity.class));
             finish();
+        }else{
+            setUnattachedEmployee(currentUser);
         }
     }
 
@@ -151,8 +146,19 @@ public class MainActivity extends AppCompatActivity {
                         currentAgencyDetailEditButton.setText(String.format(getString(R.string.change_agency_detail_management_label), currentAgency.getName()));
                         currentAgencyServicesEditButton.setText(String.format(getString(R.string.change_agency_services_management_label), currentAgency.getName()));
 
-                        currentAgencyDetailEditButton.setOnClickListener(manageAgencyDetailNavigationListener);
-                        currentAgencyServicesEditButton.setOnClickListener(manageAgencyDetailNavigationListener);
+                        currentAgencyDetailEditButton.setOnClickListener(new View.OnClickListener(){
+
+                            @Override
+                            public void onClick(View v) {
+                                showEditAgencyDialog(currentAgency);
+                            }
+                        });
+                        currentAgencyServicesEditButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                setCurrentAgencyServicesByUser(getApplicationContext(), currentUser, currentAgency);
+                            }
+                        });
 
                     })
                     .exceptionally(throwable -> {
@@ -331,5 +337,93 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Une erreur est suvenue lors de la creation!!!", Toast.LENGTH_SHORT).show();
             return null;
         });
+    }
+
+    private void setCurrentAgencyServicesByUser(Context context, User currentUser, Agency currentAgency){
+
+        firebaseRepository
+                .getAllServiceDeliveries()
+                .thenAccept( serviceDeliveries -> {
+
+                    if( !serviceDeliveries.isEmpty() ){
+                        showSelectorDialogUI(serviceDeliveries, currentAgency, this);
+                    }
+
+                })
+                .exceptionally(throwable -> {
+                    Log.d(TAG, throwable.getMessage());
+                    Toast.makeText(getApplicationContext(), "Une erreur est suvenue lors du chargement des donnees!!!", Toast.LENGTH_SHORT).show();
+                    return null;
+                });
+
+
+    }
+
+    private void showSelectorDialogUI(List<ServiceDelivery> serviceDeliveries, Agency currentAgency, Context context){
+        boolean[] checkedItems = new boolean[serviceDeliveries.size()];
+        List<String> serviceDeliveryIdsInAgency = getServiceDeliveryIdsInAgency(currentAgency);
+        for (int i=0; i < serviceDeliveries.size(); i++){
+            checkedItems[i] = serviceDeliveryIdsInAgency.contains(serviceDeliveries.get(i).getId());
+        }
+
+        ApplicationUtils.showDialogWithMultipleSelection(
+                context,
+                serviceDeliveries,
+                ServiceDelivery::getName,
+                String.format(getString(R.string.select_agency_services_management_label), currentAgency.getName()),
+                getString(R.string.cancel_text),
+                getString(R.string.save_text),
+                new OnMultiSelectListener<ServiceDelivery>() {
+                    @Override
+                    public void onMultiSelect(List<ServiceDelivery> selectedItems) {
+                        for (ServiceDelivery serviceDelivery : selectedItems) {
+                            Log.d(TAG, "Selected ServiceDelivery: " + serviceDelivery.toString());
+
+                            // Check if the selected ServiceDelivery is already associated with the agency
+                            if (serviceDeliveryIdsInAgency.contains(serviceDelivery.getId())) {
+                                // ServiceDelivery is already in the agency
+                                Log.d(TAG, "ServiceDelivery is already in the agency");
+                            } else {
+                                // ServiceDelivery is not in the agency
+                                Log.d(TAG, "ServiceDelivery is not in the agency");
+                                currentAgency.getServicesDelivery().add(serviceDelivery);
+                            }
+                        }
+
+                        editAgency(currentAgency);
+                    }
+                },
+                new DialogInterface.OnClickListener(){
+
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                },
+                new DialogInterface.OnClickListener(){
+
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                },
+                new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                        checkedItems[which] = isChecked;
+                    }
+                }
+        );
+    }
+
+    private List<String> getServiceDeliveryIdsInAgency(Agency agency) {
+        List<String> serviceDeliveryIds = new ArrayList<>();
+        List<ServiceDelivery> servicesDelivery = agency.getServicesDelivery();
+        for (ServiceDelivery serviceDelivery : servicesDelivery) {
+            serviceDeliveryIds.add(serviceDelivery.getId());
+        }
+        return serviceDeliveryIds;
     }
 }

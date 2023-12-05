@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "845596705159",
-    "project_id": "ottawa-novigrad-b91a3",
-    "storage_bucket": "ottawa-novigrad-b91a3.appspot.com"
+    "project_number": "735636978274",
+    "project_id": "ottawa-novigrad",
+    "storage_bucket": "ottawa-novigrad.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:845596705159:android:579f6da98d7ed77ba9d322",
+        "mobilesdk_app_id": "1:735636978274:android:ae4b7de56a62248af92f3b",
         "android_client_info": {
           "package_name": "ca.uottawa.testnovigrad"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDZp5nMJreJm7hDRweO9gozDoVX49mNst8"
+          "current_key": "AIzaSyAZ4NJxGkymfBIkLjFjsD89dU2FhpaUOl4"
         }
       ],
       "services": {
