@@ -87,6 +87,7 @@ public class ApplicationUtils {
     public static <T> void showDialogWithMultipleSelection(
             Context context,
             List<T> items,
+            boolean[] checkedItems,
             Function<T, String> extractor,
             String titleText,
             String cancelText,
@@ -96,7 +97,7 @@ public class ApplicationUtils {
             DialogInterface.OnClickListener onOkListener,
             DialogInterface.OnMultiChoiceClickListener onMultiChoiceClickListener
     ) {
-        boolean[] checkedItems = new boolean[items.size()];
+//        boolean[] checkedItems = new boolean[items.size()];
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(titleText);
 

@@ -241,11 +241,9 @@ public class FirebaseRepository {
                     List<ServiceDelivery> serviceDeliveryList = new ArrayList<>();
 
                     for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                        String id = documentSnapshot.getId();
-                        String name = documentSnapshot.getString("name");
-                        String description = documentSnapshot.getString("description");
+                        ServiceDelivery serviceDelivery = formatDataFromFirestore(documentSnapshot, ServiceDelivery.class);
+                        serviceDelivery.setId(documentSnapshot.getId());
 
-                        ServiceDelivery serviceDelivery = new ServiceDelivery(id, name, description);
                         serviceDeliveryList.add(serviceDelivery);
                     }
 
@@ -395,7 +393,13 @@ public class FirebaseRepository {
 
         firebaseFirestore.collection(COMPANY_COLLECTION_NAME).document(uid)
                 .get()
-                .addOnSuccessListener(documentSnapshot -> future.complete( formatDataFromFirestore(documentSnapshot, Agency.class)))
+                .addOnSuccessListener(
+                        agencyJson -> {
+                            Agency agency = formatDataFromFirestore(agencyJson, Agency.class);
+                            agency.setId(uid);
+                            future.complete(agency);
+                        }
+                )
                 .addOnFailureListener(e -> future.completeExceptionally(e));
 
         return future;

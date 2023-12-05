@@ -131,11 +131,11 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(context, LoginActivity.class));
             finish();
         }else{
-            setUnattachedEmployee(currentUser);
+            setUnattachedEmployee(currentUser, context);
         }
     }
 
-    private void setUnattachedEmployee(User currentUser){
+    private void setUnattachedEmployee(User currentUser, Context context){
         if( currentUser.getUserAuthority().equals(FirebaseRepository.USER_ROLE_EMPLOYEE) && currentUser.getUserCompany() == null){
             loadAllAgencies(currentUser);
         }
@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
                         currentAgencyServicesEditButton.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                setCurrentAgencyServicesByUser(getApplicationContext(), currentUser, currentAgency);
+                                setCurrentAgencyServicesByUser(context, currentUser, currentAgency);
                             }
                         });
 
@@ -346,13 +346,14 @@ public class MainActivity extends AppCompatActivity {
                 .thenAccept( serviceDeliveries -> {
 
                     if( !serviceDeliveries.isEmpty() ){
-                        showSelectorDialogUI(serviceDeliveries, currentAgency, this);
+                        showSelectorDialogUI(serviceDeliveries, currentAgency, context);
                     }
 
                 })
                 .exceptionally(throwable -> {
-                    Log.d(TAG, throwable.getMessage());
-                    Toast.makeText(getApplicationContext(), "Une erreur est suvenue lors du chargement des donnees!!!", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "unable to fecth services list:" + throwable.getMessage());
+//                    throwable.getStackTrace();
+                    Toast.makeText(context, "Une erreur est suvenue lors du chargement des donnees!!!", Toast.LENGTH_SHORT).show();
                     return null;
                 });
 
@@ -369,50 +370,41 @@ public class MainActivity extends AppCompatActivity {
         ApplicationUtils.showDialogWithMultipleSelection(
                 context,
                 serviceDeliveries,
+                checkedItems,
                 ServiceDelivery::getName,
-                String.format(getString(R.string.select_agency_services_management_label), currentAgency.getName()),
-                getString(R.string.cancel_text),
-                getString(R.string.save_text),
+                String.format(context.getString(R.string.select_agency_services_management_label), currentAgency.getName()),
+                context.getString(R.string.cancel_text),
+                context.getString(R.string.save_text),
                 new OnMultiSelectListener<ServiceDelivery>() {
                     @Override
                     public void onMultiSelect(List<ServiceDelivery> selectedItems) {
-                        for (ServiceDelivery serviceDelivery : selectedItems) {
-                            Log.d(TAG, "Selected ServiceDelivery: " + serviceDelivery.toString());
 
-                            // Check if the selected ServiceDelivery is already associated with the agency
-                            if (serviceDeliveryIdsInAgency.contains(serviceDelivery.getId())) {
-                                // ServiceDelivery is already in the agency
-                                Log.d(TAG, "ServiceDelivery is already in the agency");
-                            } else {
-                                // ServiceDelivery is not in the agency
-                                Log.d(TAG, "ServiceDelivery is not in the agency");
-                                currentAgency.getServicesDelivery().add(serviceDelivery);
-                            }
-                        }
+                        currentAgency.setServicesDelivery(selectedItems);
+                        Log.d(TAG, "Selected ServiceDelivery: " + selectedItems.size());
+                    }
+                },
+                new DialogInterface.OnClickListener(){
 
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                },
+                new DialogInterface.OnClickListener(){
+
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
                         editAgency(currentAgency);
-                    }
-                },
-                new DialogInterface.OnClickListener(){
-
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                },
-                new DialogInterface.OnClickListener(){
-
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
                     }
                 },
                 new DialogInterface.OnMultiChoiceClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                         checkedItems[which] = isChecked;
+                        Log.d(TAG, "Checkbox clicked - Position: " + which + ", Checked: " + isChecked);
+
                     }
                 }
         );
