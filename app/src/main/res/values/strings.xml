@@ -9,6 +9,7 @@
     <string name="add_text">Ajouter</string>
     <string name="save_text">Enregistrer</string>
     <string name="edit_text">Modifier</string>
+    <string name="view_detail_text">Voir plus</string>
     <string name="delete_text">Supprimer</string>
     <string name="cancel_text">Annuler</string>
     <string name="previous">Previous</string>
@@ -43,6 +44,10 @@
     <string name="change_agency_services_management_label">Prestations delivrées par: %1$s</string>
     <string name="select_agency_services_management_label">Selectionnez les Prestations delivrées par: %1$s</string>
     <string name="welcome_text">Bienvenu %1$s, vous êtes connecté en tant que : %2$s</string>
+    <string name="search_text">Rechercher</string>
+    <string name="reset_text">Re-Initialiser</string>
+    <string name="service_name_label">Prestation de service</string>
+    <string name="time_label">Horaire de disponibilité</string>
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus

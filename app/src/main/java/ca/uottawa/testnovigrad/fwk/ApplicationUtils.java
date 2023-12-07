@@ -3,6 +3,8 @@ package ca.uottawa.testnovigrad.fwk;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 
 import androidx.appcompat.app.AlertDialog;
 
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 
+import ca.uottawa.testnovigrad.R;
 import ca.uottawa.testnovigrad.models.User;
 
 public class ApplicationUtils {
@@ -82,6 +85,24 @@ public class ApplicationUtils {
         } catch (ParseException | IllegalStateException e) {
             throw new JsonParseException("Error parsing timestamp from JsonElement", e);
         }
+    }
+
+    public static void showDialogForm(Context context,
+                                      View dialogView,
+                                      DialogInterface.OnClickListener onPositiveClickListener,
+                                      String positiveTextButton,
+                                      DialogInterface.OnClickListener onNegativeClickListener,
+                                      String negativeTextButton
+                                      ){
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+
+        dialogBuilder.setView(dialogView);
+
+        dialogBuilder.setPositiveButton(positiveTextButton, onPositiveClickListener);
+        dialogBuilder.setNegativeButton(negativeTextButton, onNegativeClickListener);
+
+        AlertDialog alertDialog = dialogBuilder.create();
+        alertDialog.show();
     }
 
     public static <T> void showDialogWithMultipleSelection(

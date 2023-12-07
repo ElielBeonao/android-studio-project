@@ -9,6 +9,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -25,7 +26,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import ca.uottawa.testnovigrad.fwk.AgencyAdapter;
 import ca.uottawa.testnovigrad.fwk.ApplicationUtils;
+import ca.uottawa.testnovigrad.fwk.Filter;
+import ca.uottawa.testnovigrad.fwk.SearchAgencyAdapter;
 import ca.uottawa.testnovigrad.models.Agency;
 import ca.uottawa.testnovigrad.models.ServiceDelivery;
 import ca.uottawa.testnovigrad.models.User;
@@ -423,5 +427,43 @@ public class FirebaseRepository {
         JsonElement jsonElement = gson.toJsonTree(documentSnapshot.getData());
 
         return gson.fromJson(jsonElement, valueType);
+    }
+
+    public List<Agency> performDynamicSearch(List<Filter> filters, SearchAgencyAdapter searchAdapter) {
+        // Start with a base query
+        Query query = firebaseFirestore.collection(COMPANY_COLLECTION_NAME);
+
+        // Apply each filter to the query dynamically
+        for (Filter filter : filters) {
+            query = applyFilter(query, filter);
+        }
+        // Execute the query and retrieve the search results
+        // Note: Implement your own logic to convert Firestore documents to Agency objects
+        // Also, handle the asynchronous nature of Firestore queries appropriately
+        // (e.g., use listeners or CompletableFuture)
+        // The code below is a simplified example
+        // Replace it with the actual Firestore query execution logic
+        query.get().addOnSuccessListener(queryDocumentSnapshots -> {
+            List<Agency> searchResults = queryDocumentSnapshots.toObjects(Agency.class);
+            searchAdapter.setAgencyList(searchResults);
+        });
+
+        // Return an empty list for now (actual result will be obtained asynchronously)
+        return new ArrayList<>();
+    }
+
+    private Query applyFilter(Query query, Filter filter) {
+        // Apply a single filter to the query dynamically
+        switch (filter.getOperator()) {
+            case ">":
+                return query.whereGreaterThan(filter.getFieldName(), filter.getValue());
+            case "==":
+                return query.whereEqualTo(filter.getFieldName(), filter.getValue());
+            case "contains":
+                return query.whereArrayContains(filter.getFieldName(), filter.getValue());
+            // Add more cases as needed
+            default:
+                return query;
+        }
     }
 }

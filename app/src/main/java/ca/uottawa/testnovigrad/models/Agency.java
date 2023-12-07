@@ -31,6 +31,8 @@ public class Agency {
 //    @JsonAdapter(ApplicationUtils.DateDeserializer.class)
     private Timestamp closedAt;
 
+    private Double rating;
+
     private List<ServiceDelivery> servicesDelivery;
 
     public Agency(){
@@ -96,6 +98,14 @@ public class Agency {
         this.closedAt = closedAt;
     }
 
+    public Double getRating() {
+        return rating;
+    }
+
+    public void setRating(Double rating) {
+        this.rating = rating;
+    }
+
     public List<ServiceDelivery> getServicesDelivery() {
         return servicesDelivery;
     }
@@ -112,6 +122,7 @@ public class Agency {
                 ", address='" + address + '\'' +
                 ", openedAt=" + openedAt +
                 ", closedAt=" + closedAt +
+                ", rating=" + rating +
                 ", servicesDelivery=" + servicesDelivery +
                 '}';
     }

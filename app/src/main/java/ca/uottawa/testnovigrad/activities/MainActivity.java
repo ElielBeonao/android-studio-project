@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView textView;
 
     private Button currentAgencyDetailEditButton, currentAgencyServicesEditButton, userManagementNavigationButton, agencyManagementNavigationButton, serviceDeliveryManagementNavigationButton;
-    private ImageButton logoutButton;
+    private ImageButton searchButtonNavTo, logoutButton;
 
     private User currentUser;
 
@@ -95,6 +95,16 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private View.OnClickListener manageSearchServiceListNavigationListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(getApplicationContext(), SearchServiceListActivity.class));
+            finish();
+
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,11 +119,13 @@ public class MainActivity extends AppCompatActivity {
         currentAgencyDetailEditButton =  findViewById(R.id.btn_edit_current_agency_detail_management);
         currentAgencyServicesEditButton = findViewById(R.id.btn_edit_current_agency_services_management);
 
+        searchButtonNavTo =  findViewById(R.id.btn_search_service_navto);
         logoutButton = findViewById(R.id.btn_logout);
         userManagementNavigationButton = findViewById(R.id.btn_user_management);
         agencyManagementNavigationButton = findViewById(R.id.btn_agency_management);
         serviceDeliveryManagementNavigationButton = findViewById(R.id.btn_customer_services_management);
 
+        searchButtonNavTo.setOnClickListener(manageSearchServiceListNavigationListener);
         logoutButton.setOnClickListener(logoutCurrentUserListener);
         userManagementNavigationButton.setOnClickListener(manageUserNavigationListener);
         agencyManagementNavigationButton.setOnClickListener(manageAgencyNavigationListener);
